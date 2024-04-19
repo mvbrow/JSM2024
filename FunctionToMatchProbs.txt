@@ -1,0 +1,70 @@
+#run function that determines if variable is 1) in range AND 2) consistent
+
+
+df <- read.csv("combined16pctImputedBert.csv", header=TRUE, sep=",")
+
+df$selectVar = ifelse(df$alcmon2>1,1,0)
+
+
+matchProbFunc = function(df) {
+	newVec1 = NA
+     	df1 <<- df[ which(df$selectVar==1), ]
+     	df2 <<- df[ which(df$selectVar==0), ]
+	for(i in 1:dim(df1)[1]){
+		newVec1[i] = which.min(abs(df1$posProb[i]-df2$posProb))
+		print(newVec1[i])
+     	}
+	df1$newImpute <<- df2$alcmon[newVec1]
+	#return(df1)
+	}	
+
+matchProbFunc(df)
+
+#idx = which.min(abs(df1$posProb[1]-df2$posProb))
+
+combined1pct = read.csv("combinedData1pct_20240209.csv", header=TRUE, sep=",")
+df3 = combined1pct[which(combined1pct$alcmon2<2),]
+combined1pctBertComplete = rbind(df1, df3)
+write.table(combined1pctBertComplete, file="combined1pctBertComplete.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+ 
+
+rm(df1,df3)
+#16 pct missing
+#come up with data set of 33K+ observations 11176+11176*2
+df16Miss = combined16pct[which(combined16pct$alcmon2==99),]
+df16Compl = combined16pct[sample(which(combined16pct$alcmon2 !=99),22352),]
+dim(df16Compl)
+combined16pctBert = rbind(df16Miss, df16Compl)
+
+#prepare bertHD for 1 pct
+df = read.csv("combinedDatanewdata6HoldOut.csv", header=TRUE, sep=",")
+df1pctMiss = df[which(df$alcmon2==99),]
+df1pctCompl = df[sample(which(df$alcmon2 !=99), 5000),]
+combined1pctBert = rbind(df1pctMiss, df1pctCompl)
+write.table(combined1pctBert, file="combined1pctBert.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#try  BERT weighted sequential Hot Deck on 16 pct
+setwd("C:/Users/mark.brow/OneDrive - HHS Office of the Secretary/Desktop/Projects/Imputation Folder")
+df = read.csv("combined16pctImputedBert.csv", header=TRUE, sep=",")
+
+df$selectVar = ifelse(df$alcmon2>1,1,0)
+
+matchProbFunc = function(df) {
+	newVec1 = NA
+     	df1 <<- df[ which(df$selectVar==1), ]
+     	df2 <<- df[ which(df$selectVar==0), ]
+	for(i in 1:dim(df1)[1]){
+		newVec1[i] = which.min(abs(df1$posProb2[i]-df2$posProb2))
+		print(newVec1[i])
+     	}
+	df1$newImpute3 <<- df2$alcmon[newVec1]
+	#return(df1)
+	}	
+
+matchProbFunc(df)
+
+combined16pct = read.csv("combinedData16pct_20240208.csv", header=TRUE, sep=",")
+df3 = combined16pct[which(combined16pct$alcmon2<2),]
+combined16pctBertComplete = rbind(df1, df3)
+write.table(combined16pctBertComplete, file="combined16pctBertComplete_20240212.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+ 

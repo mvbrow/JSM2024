@@ -1,0 +1,567 @@
+library(addhazard)
+library(mice)
+library(mixgb)
+library(dplyr)
+library(mitools)
+library(ggpubr)
+library(grid)
+library(xtable)
+library(survival)
+library(cowplot)
+
+setwd("C:/Users/mark.brow/OneDrive - HHS Office of the Secretary/Desktop/Projects/Imputation Folder/Imputation Folder")
+df = read.csv("NSDUH16pctMiss.csv", header=TRUE, sep=",")
+df2 = df[,-6]
+df2 = df2[,-51]
+m <- 5
+
+mice.imp <- mice(data=df2, printFlag = FALSE, m = m)
+micedata16pct <- complete(mice.imp, action = "all")
+write.table(micedata16pct, file="miceDataCompl16pct.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+df5 = as.data.frame(micedata16pct)
+
+micedata16pct_1 <- df5[,c(1:51)]
+micedata16pct_2 <- df5[,c(52:102)]
+micedata16pct_3 <- df5[,c(103:153)]
+micedata16pct_4 <- df5[,c(154:204)]
+micedata16pct_5 <- df5[,c(205:255)]
+
+df = read.csv("NSDUH16pctMiss.csv", header=TRUE, sep=",")
+micedata16pct_1$alcmon = df$alcmon
+micedata16pct_2$alcmon = df$alcmon
+micedata16pct_3$alcmon = df$alcmon
+micedata16pct_4$alcmon = df$alcmon
+micedata16pct_5$alcmon = df$alcmon
+
+micedata16pct_1$alcmon2 = df$alcmon2
+micedata16pct_2$alcmon2 = df$alcmon2
+micedata16pct_3$alcmon2 = df$alcmon2
+micedata16pct_4$alcmon2 = df$alcmon2
+micedata16pct_5$alcmon2 = df$alcmon2
+
+micedata16pct_1$seqn =  c(1:69850)
+micedata16pct_2$seqn =  c(1:69850)
+micedata16pct_3$seqn =  c(1:69850)
+micedata16pct_4$seqn =  c(1:69850)
+micedata16pct_5$seqn =  c(1:69850)
+
+micedata16pct_1$m =  1
+micedata16pct_2$m =  2
+micedata16pct_3$m =  3
+micedata16pct_4$m =  4
+micedata16pct_5$m =  5
+
+colnames(micedata16pct_1) = sub("X1.", "", colnames(micedata16pct_1))
+colnames(micedata16pct_2) = sub("X2.", "", colnames(micedata16pct_2))
+colnames(micedata16pct_3) = sub("X3.", "", colnames(micedata16pct_3))
+colnames(micedata16pct_4) = sub("X4.", "", colnames(micedata16pct_4))
+colnames(micedata16pct_5) = sub("X5.", "", colnames(micedata16pct_5))
+
+write.table(micedata16pct_1, file="micedata16pct_1.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(micedata16pct_2, file="micedata16pct_2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(micedata16pct_3, file="micedata16pct_3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(micedata16pct_4, file="micedata16pct_4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(micedata16pct_5, file="micedata16pct_5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+
+mice.data1 = df5[,c(1:51)]
+mice.data1$m = 1
+
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+mice.data1$alcmon = df$alcmon
+mice.data1$alcmon2 = df$alcmon2
+colnames(mice.data1) = sub("X1.", "", colnames(mice.data1))
+mice.data1$seqn = c(1:69850)
+write.table(mice.data1, file="mice.data1.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+colnames(df5[102])
+mice.data2 = df5[,c(52:102)]
+mice.data2$m = 2
+mice.data2$alcmon = df$alcmon
+mice.data2$alcmon2 = df$alcmon2
+colnames(mice.data2) = sub("X2.", "", colnames(mice.data2))
+mice.data2$seqn = c(1:69850)
+write.table(mice.data2, file="mice.data2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+colnames(df5[153])
+mice.data3 = df5[,c(103:153)]
+mice.data3$m = 3
+mice.data3$alcmon = df$alcmon
+mice.data3$alcmon2 = df$alcmon2
+colnames(mice.data3) = sub("X3.", "", colnames(mice.data3))
+mice.data3$seqn = c(1:69850)
+write.table(mice.data3, file="mice.data3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+colnames(df5[204])
+mice.data4 = df5[,c(154:204)]
+mice.data4$m = 4
+mice.data4$alcmon = df$alcmon
+mice.data4$alcmon2 = df$alcmon2
+colnames(mice.data4) = sub("X4.", "", colnames(mice.data4))
+mice.data4$seqn = c(1:69850)
+write.table(mice.data4, file="mice.data4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+colnames(df5[255])
+mice.data5 = df5[,c(205:255)]
+mice.data5$m = 5
+mice.data5$alcmon = df$alcmon
+mice.data5$alcmon2 = df$alcmon2
+colnames(mice.data5) = sub("X5.", "", colnames(mice.data5))
+mice.data5$seqn = c(1:69850)
+write.table(mice.data5, file="mice.data5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+mice.dataTot = rbind(mice.data1, mice.data2, mice.data3, mice.data4, mice.data5)
+write.table(mice.dataTot, file="mice.dataTot.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+# mice-cart
+df2 = df[,c(-6,-51)]
+df2 = df2[, -51]
+m <- 5
+
+cart.imp <- mice(data = df2, printFlag = FALSE, method = "cart", m = m)
+cartdata16pct <- complete(cart.imp, action = "all")
+
+#CART Data
+write.table(cart.data, file="cart.data.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+df6 = as.data.frame(cart.data)
+cart.data1 = df6[,c(1:50)]
+cart.data1$m = 1
+
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+cart.data1$alcmon = df$alcmon
+cart.data1$alcmon2 = df$alcmon2
+colnames(cart.data1) = sub("X1.", "", colnames(cart.data1))
+cart.data1$seqn = c(1:69850)
+write.table(cart.data1, file="cart.data1.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+colnames(df6[102])
+cart.data2 = df6[,c(51:100)]
+cart.data2$m = 2
+cart.data2$alcmon = df$alcmon
+cart.data2$alcmon2 = df$alcmon2
+colnames(cart.data2) = sub("X2.", "", colnames(cart.data2))
+cart.data2$seqn = c(1:69850)
+write.table(cart.data2, file="cart.data2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+colnames(df6[153])
+cart.data3 = df6[,c(101:150)]
+cart.data3$m = 3
+cart.data3$alcmon = df$alcmon
+cart.data3$alcmon2 = df$alcmon2
+colnames(cart.data3) = sub("X3.", "", colnames(cart.data3))
+cart.data3$seqn = c(1:69850)
+write.table(cart.data3, file="cart.data3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+colnames(df6[204])
+cart.data4 = df6[,c(151:200)]
+cart.data4$m = 4
+cart.data4$alcmon = df$alcmon
+cart.data4$alcmon2 = df$alcmon2
+colnames(cart.data4) = sub("X4.", "", colnames(cart.data4))
+cart.data4$seqn = c(1:69850)
+write.table(cart.data4, file="cart.data4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+colnames(df6[255])
+cart.data5 = df6[,c(201:250)]
+cart.data5$m = 5
+cart.data5$alcmon = df$alcmon
+cart.data5$alcmon2 = df$alcmon2
+colnames(cart.data5) = sub("X5.", "", colnames(cart.data5))
+cart.data5$seqn = c(1:69850)
+write.table(cart.data5, file="cart.data5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+mice.dataTot = rbind(mice.data1, mice.data2, mice.data3, mice.data4, mice.data5)
+write.table(mice.dataTot, file="mice.dataTot.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#mixbg model
+# mixgb
+xgb.params <- list(
+  nthread = 1, max_depth = 2, gamma = 0, eta = 0.1, min_child_weight = 1, subsample = 1, colsample_bytree = 1, colsample_bylevel = 1, colsample_bynode = 1,
+  tree_method = "auto"
+)
+mixgb.data <- mixgb(data = df2, xgb.params = xgb.params, nrounds = 100, bootstrap = FALSE, m = m, maxit = 1)
+mixgbD = as.data.frame(mixgb.data)
+mixgbdata1 = mixgbD[,c(1:50)]
+colnames(mixgbdata1)[50] = "rcalcmon"
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+mixgbdata1$alcmon =  df$alcmon
+mixgbdata1$alcmon2 = df$alcmon2
+mixgbdata1$m = 1
+mixgbdata1$seqn = c(1:69850)
+
+write.table(mixgbdata1, file="mixgbdata1.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+#m = 2 imputed data set
+
+mixgbdata2 = mixgbD[,c(51:100)]
+colnames(mixgbdata2)[50] = "rcalcmon"
+colnames(mixgbdata2) = sub(".1", "", colnames(mixgbdata2))
+mixgbdata2$alcmon =  df$alcmon
+mixgbdata2$alcmon2 = df$alcmon2
+mixgbdata2$m = 2
+mixgbdata2$seqn = c(1:69850)
+
+write.table(mixgbdata2, file="mixgbdata2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 3 imputed data set
+
+mixgbdata3 = mixgbD[,c(101:150)]
+colnames(mixgbdata3)[50] = "rcalcmon"
+colnames(mixgbdata3) = sub(".2", "", colnames(mixgbdata3))
+mixgbdata3$alcmon =  df$alcmon
+mixgbdata3$alcmon2 = df$alcmon2
+mixgbdata3$m = 3
+mixgbdata3$seqn = c(1:69850)
+
+write.table(mixgbdata3, file="mixgbdata3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 4 imputed data set
+
+mixgbdata4 = mixgbD[,c(151:200)]
+colnames(mixgbdata4)[50] = "rcalcmon"
+colnames(mixgbdata4) = sub(".3", "", colnames(mixgbdata4))
+mixgbdata4$alcmon =  df$alcmon
+mixgbdata4$alcmon2 = df$alcmon2
+mixgbdata4$m = 4
+mixgbdata4$seqn = c(1:69850)
+
+write.table(mixgbdata4, file="mixgbdata4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 5 imputed data set
+
+mixgbdata5 = mixgbD[,c(201:250)]
+colnames(mixgbdata5)[50] = "rcalcmon"
+colnames(mixgbdata5) = sub(".4", "", colnames(mixgbdata5))
+mixgbdata5$alcmon =  df$alcmon
+mixgbdata5$alcmon2 = df$alcmon2
+mixgbdata5$m = 5
+mixgbdata5$seqn = c(1:69850)
+
+write.table(mixgbdata5, file="mixgbdata5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#NSDUH with 1000 missing
+df = read.csv("impDataMarMissNew.csv", header=TRUE, sep=",")
+df$alcmon2 = ifelse(df$alcmon2==99,"NA",df$alcmon2)
+colnames(df)[7]
+df2 = df[,-7]
+m <- 5
+mice.imp <- mice(data=df2, printFlag = FALSE, m = m)
+micedata1000 <- complete(mice.imp, action = "all")
+df5 = as.data.frame(micedata1000)
+micedata1000_1 <- df5[,c(1:52)]
+micedata1000_2 <- df5[,c(53:104)]
+micedata1000_3 <- df5[,c(105:156)]
+micedata1000_4 <- df5[,c(157:208)]
+micedata1000_5 <- df5[,c(209:260)]
+
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+micedata1000_1$alcmon = df$alcmon
+micedata1000_2$alcmon = df$alcmon
+micedata1000_3$alcmon = df$alcmon
+micedata1000_4$alcmon = df$alcmon
+micedata1000_5$alcmon = df$alcmon
+
+micedata1000_1$seqn =  c(1:69850)
+micedata1000_2$seqn =  c(1:69850)
+micedata1000_3$seqn =  c(1:69850)
+micedata1000_4$seqn =  c(1:69850)
+micedata1000_5$seqn =  c(1:69850)
+
+micedata1000_1$m =  1
+micedata1000_2$m =  2
+micedata1000_3$m =  3
+micedata1000_4$m =  4
+micedata1000_5$m =  5
+
+colnames(micedata1000_1) = sub("X1.", "", colnames(micedata1000_1))
+colnames(micedata1000_2) = sub("X2.", "", colnames(micedata1000_2))
+colnames(micedata1000_3) = sub("X3.", "", colnames(micedata1000_3))
+colnames(micedata1000_4) = sub("X4.", "", colnames(micedata1000_4))
+colnames(micedata1000_5) = sub("X5.", "", colnames(micedata1000_5))
+
+write.table(micedata1000_1, file="micedata1000_1.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(micedata1000_2, file="micedata1000_2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(micedata1000_3, file="micedata1000_3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(micedata1000_4, file="micedata1000_4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(micedata1000_5, file="micedata1000_5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#cart data with 1000 missing
+df = read.csv("impDataMarMissNew.csv", header=TRUE, sep=",")
+colnames(df)[7]
+df2 = df[,-7]
+df2 = df2[,-52]
+
+m <- 5
+
+cart.imp <- mice(data = df2, printFlag = FALSE, method = "cart", m = m)
+cartdata1000 <- complete(cart.imp, action = "all")
+
+#cart data
+df5 = as.data.frame(cartdata1000)
+cartdata1000_1 <- df5[,c(1:51)]
+cartdata1000_2 <- df5[,c(52:102)]
+cartdata1000_3 <- df5[,c(103:153)]
+cartdata1000_4 <- df5[,c(154:204)]
+cartdata1000_5 <- df5[,c(205:255)]
+
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+cartdata1000_1$alcmon = df$alcmon
+cartdata1000_2$alcmon = df$alcmon
+cartdata1000_3$alcmon = df$alcmon
+cartdata1000_4$alcmon = df$alcmon
+cartdata1000_5$alcmon = df$alcmon
+
+cartdata1000_1$seqn =  c(1:69850)
+cartdata1000_2$seqn =  c(1:69850)
+cartdata1000_3$seqn =  c(1:69850)
+cartdata1000_4$seqn =  c(1:69850)
+cartdata1000_5$seqn =  c(1:69850)
+
+cartdata1000_1$m =  1
+cartdata1000_2$m =  2
+cartdata1000_3$m =  3
+cartdata1000_4$m =  4
+cartdata1000_5$m =  5
+
+colnames(cartdata1000_1) = sub("X1.", "", colnames(cartdata1000_1))
+colnames(cartdata1000_2) = sub("X2.", "", colnames(cartdata1000_2))
+colnames(cartdata1000_3) = sub("X3.", "", colnames(cartdata1000_3))
+colnames(cartdata1000_4) = sub("X4.", "", colnames(cartdata1000_4))
+colnames(cartdata1000_5) = sub("X5.", "", colnames(cartdata1000_5))
+
+write.table(cartdata1000_1, file="cartdata1000_1.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(cartdata1000_2, file="cartdata1000_2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(cartdata1000_3, file="cartdata1000_3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(cartdata1000_4, file="cartdata1000_4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(cartdata1000_5, file="cartdata1000_5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#mixgb with 1.43 % (1000 missing)
+df = read.csv("impDataMarMissNew.csv", header=TRUE, sep=",")
+df2 = df[,-53]
+df2 = df2[,-7]
+m = 5
+xgb.params <- list(
+  nthread = 1, max_depth = 2, gamma = 0, eta = 0.1, min_child_weight = 1, subsample = 1, colsample_bytree = 1, colsample_bylevel = 1, colsample_bynode = 1,
+  tree_method = "auto"
+)
+mixgb.data <- mixgb(data = df2, xgb.params = xgb.params, nrounds = 100, bootstrap = FALSE, m = m, maxit = 1)
+mixgbD = as.data.frame(mixgb.data)
+
+mixgbdata1000_1 = mixgbD[,c(1:51)]
+colnames(mixgbdata1000_1)[1] = "rcalcmon"
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+mixgbdata1000_1$alcmon =  df$alcmon
+mixgbdata1000_1$alcmon2 = df$alcmon2
+mixgbdata1000_1$m = 1
+mixgbdata1000_1$seqn = c(1:69850)
+
+write.table(mixgbdata1000_1, file="mixgbdata1000_1.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+#m = 2 imputed data set
+
+mixgbdata1000_2 = mixgbD[,c(52:102)]
+colnames(mixgbdata1000_2)[1] = "rcalcmon"
+colnames(mixgbdata1000_2) = sub(".1", "", colnames(mixgbdata1000_2))
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+mixgbdata1000_2$alcmon =  df$alcmon
+mixgbdata1000_2$alcmon2 = df$alcmon2
+mixgbdata1000_2$m = 2
+mixgbdata1000_2$seqn = c(1:69850)
+
+write.table(mixgbdata1000_2, file="mixgbdata1000_2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+#m = 3 imputed data set
+
+mixgbdata1000_3 = mixgbD[,c(103:153)]
+colnames(mixgbdata1000_3)[1] = "rcalcmon"
+colnames(mixgbdata1000_3) = sub(".2", "", colnames(mixgbdata1000_3))
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+mixgbdata1000_3$alcmon =  df$alcmon
+mixgbdata1000_3$alcmon2 = df$alcmon2
+mixgbdata1000_3$m = 3
+mixgbdata1000_3$seqn = c(1:69850)
+
+write.table(mixgbdata1000_3, file="mixgbdata1000_3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 4 imputed data set
+
+mixgbdata1000_4 = mixgbD[,c(154:204)]
+colnames(mixgbdata1000_4)[1] = "rcalcmon"
+colnames(mixgbdata1000_4) = sub(".3", "", colnames(mixgbdata1000_4))
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+mixgbdata1000_4$alcmon =  df$alcmon
+mixgbdata1000_4$alcmon2 = df$alcmon2
+mixgbdata1000_4$m = 4
+mixgbdata1000_4$seqn = c(1:69850)
+
+write.table(mixgbdata1000_4, file="mixgbdata1000_4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 5 imputed data set
+
+mixgbdata1000_5 = mixgbD[,c(205:255)]
+colnames(mixgbdata1000_5)[1] = "rcalcmon"
+colnames(mixgbdata1000_5) = sub(".4", "", colnames(mixgbdata1000_5))
+df = read.csv("nsduh20219pct.csv", header=TRUE, sep=",")
+mixgbdata1000_5$alcmon =  df$alcmon
+mixgbdata1000_5$alcmon2 = df$alcmon2
+mixgbdata1000_5$m = 5
+mixgbdata1000_5$seqn = c(1:69850)
+
+write.table(mixgbdata1000_5, file="mixgbdata1000_5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+
+#m = 2 imputed data set
+
+mixgbdata2 = mixgbD[,c(51:100)]
+colnames(mixgbdata2)[50] = "rcalcmon"
+colnames(mixgbdata2) = sub(".1", "", colnames(mixgbdata2))
+mixgbdata2$alcmon =  df$alcmon
+mixgbdata2$alcmon2 = df$alcmon2
+mixgbdata2$m = 2
+mixgbdata2$seqn = c(1:69850)
+
+write.table(mixgbdata2, file="mixgbdata2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 3 imputed data set
+
+mixgbdata3 = mixgbD[,c(101:150)]
+colnames(mixgbdata3)[50] = "rcalcmon"
+colnames(mixgbdata3) = sub(".2", "", colnames(mixgbdata3))
+mixgbdata3$alcmon =  df$alcmon
+mixgbdata3$alcmon2 = df$alcmon2
+mixgbdata3$m = 3
+mixgbdata3$seqn = c(1:69850)
+
+write.table(mixgbdata3, file="mixgbdata3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 4 imputed data set
+
+mixgbdata4 = mixgbD[,c(151:200)]
+colnames(mixgbdata4)[50] = "rcalcmon"
+colnames(mixgbdata4) = sub(".3", "", colnames(mixgbdata4))
+mixgbdata4$alcmon =  df$alcmon
+mixgbdata4$alcmon2 = df$alcmon2
+mixgbdata4$m = 4
+mixgbdata4$seqn = c(1:69850)
+
+write.table(mixgbdata4, file="mixgbdata4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 5 imputed data set
+
+mixgbdata5 = mixgbD[,c(201:250)]
+colnames(mixgbdata5)[50] = "rcalcmon"
+colnames(mixgbdata5) = sub(".4", "", colnames(mixgbdata5))
+mixgbdata5$alcmon =  df$alcmon
+mixgbdata5$alcmon2 = df$alcmon2
+mixgbdata5$m = 5
+mixgbdata5$seqn = c(1:69850)
+
+write.table(mixgbdata5, file="mixgbdata5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#cart data 16 pct missing
+m <- 5
+
+cart.imp <- mice(data = df2, printFlag = FALSE, method = "cart", m = m)
+
+cartdata16pct <- complete(cart.imp, action = "all")
+df6 = as.data.frame(cartdata16pct)
+
+cartdata16pct_1 <- df6[,c(1:51)]
+cartdata16pct_2 <- df6[,c(52:102)]
+cartdata16pct_3 <- df6[,c(103:153)]
+cartdata16pct_4 <- df6[,c(154:204)]
+cartdata16pct_5 <- df6[,c(205:255)]
+
+df = read.csv("NSDUH16pctMiss.csv", header=TRUE, sep=",")
+cartdata16pct_1$alcmon = df$alcmon
+cartdata16pct_2$alcmon = df$alcmon
+cartdata16pct_3$alcmon = df$alcmon
+cartdata16pct_4$alcmon = df$alcmon
+cartdata16pct_5$alcmon = df$alcmon
+
+cartdata16pct_1$alcmon2 = df$alcmon2
+cartdata16pct_2$alcmon2 = df$alcmon2
+cartdata16pct_3$alcmon2 = df$alcmon2
+cartdata16pct_4$alcmon2 = df$alcmon2
+cartdata16pct_5$alcmon2 = df$alcmon2
+
+
+cartdata16pct_1$seqn =  c(1:69850)
+cartdata16pct_2$seqn =  c(1:69850)
+cartdata16pct_3$seqn =  c(1:69850)
+cartdata16pct_4$seqn =  c(1:69850)
+cartdata16pct_5$seqn =  c(1:69850)
+
+cartdata16pct_1$m =  1
+cartdata16pct_2$m =  2
+cartdata16pct_3$m =  3
+cartdata16pct_4$m =  4
+cartdata16pct_5$m =  5
+
+colnames(cartdata16pct_1) = sub("X1.", "", colnames(cartdata16pct_1))
+colnames(cartdata16pct_2) = sub("X2.", "", colnames(cartdata16pct_2))
+colnames(cartdata16pct_3) = sub("X3.", "", colnames(cartdata16pct_3))
+colnames(cartdata16pct_4) = sub("X4.", "", colnames(cartdata16pct_4))
+colnames(cartdata16pct_5) = sub("X5.", "", colnames(cartdata16pct_5))
+
+write.table(cartdata16pct_1, file="cartdata16pct_1.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(cartdata16pct_2, file="cartdata16pct_2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(cartdata16pct_3, file="cartdata16pct_3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(cartdata16pct_4, file="cartdata16pct_4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(cartdata16pct_5, file="cartdata16pct_5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+##XGB 16 pct
+m = 5
+xgb.params <- list(
+  nthread = 1, max_depth = 2, gamma = 0, eta = 0.1, min_child_weight = 1, subsample = 1, colsample_bytree = 1, colsample_bylevel = 1, colsample_bynode = 1,
+  tree_method = "auto"
+)
+mixgbdata16pct <- mixgb(data = df2, xgb.params = xgb.params, nrounds = 100, bootstrap = FALSE, m = m, maxit = 1)
+mixgbD16pct = as.data.frame(mixgbdata16pct)
+
+mixgbdata16pct_1 = mixgbD16pct[,c(1:51)]
+df = read.csv("NSDUH16pctMiss.csv", header=TRUE, sep=",")
+mixgbdata16pct_1$alcmon =  df$alcmon
+mixgbdata16pct_1$alcmon2 = df$alcmon2
+mixgbdata16pct_1$m = 1
+mixgbdata16pct_1$seqn = c(1:69850)
+
+write.table(mixgbdata16pct_1, file="mixgbdata16pct_1.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 2 imputed data set
+
+mixgbdata16pct_2 = mixgbD16pct[,c(52:102)]
+colnames(mixgbdata16pct_2) = sub(".1", "", colnames(mixgbdata16pct_2))
+df = read.csv("NSDUH16pctMiss.csv", header=TRUE, sep=",")
+mixgbdata16pct_2$alcmon =  df$alcmon
+mixgbdata16pct_2$alcmon2 = df$alcmon2
+mixgbdata16pct_2$m = 2
+mixgbdata16pct_2$seqn = c(1:69850)
+
+write.table(mixgbdata16pct_2, file="mixgbdata16pct_2.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 3 imputed data set
+
+mixgbdata16pct_3 = mixgbD16pct[,c(103:153)]
+colnames(mixgbdata16pct_3) = sub(".2", "", colnames(mixgbdata16pct_3))
+df = read.csv("NSDUH16pctMiss.csv", header=TRUE, sep=",")
+mixgbdata16pct_3$alcmon =  df$alcmon
+mixgbdata16pct_3$alcmon2 = df$alcmon2
+mixgbdata16pct_3$m = 3
+mixgbdata16pct_3$seqn = c(1:69850)
+
+write.table(mixgbdata16pct_3, file="mixgbdata16pct_3.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 4 imputed data set
+
+mixgbdata16pct_4 = mixgbD16pct[,c(154:204)]
+colnames(mixgbdata16pct_4) = sub(".3", "", colnames(mixgbdata16pct_4))
+df = read.csv("NSDUH16pctMiss.csv", header=TRUE, sep=",")
+mixgbdata16pct_4$alcmon =  df$alcmon
+mixgbdata16pct_4$alcmon2 = df$alcmon2
+mixgbdata16pct_4$m = 4
+mixgbdata16pct_4$seqn = c(1:69850)
+
+write.table(mixgbdata16pct_4, file="mixgbdata16pct_4.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#m = 5 imputed data set
+
+mixgbdata16pct_5 = mixgbD16pct[,c(205:255)]
+colnames(mixgbdata16pct_5) = sub(".4", "", colnames(mixgbdata16pct_5))
+df = read.csv("NSDUH16pctMiss.csv", header=TRUE, sep=",")
+mixgbdata16pct_5$alcmon =  df$alcmon
+mixgbdata16pct_5$alcmon2 = df$alcmon2
+mixgbdata16pct_5$m = 5
+mixgbdata16pct_5$seqn = c(1:69850)
+
+write.table(mixgbdata16pct_5, file="mixgbdata16pct_5.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+

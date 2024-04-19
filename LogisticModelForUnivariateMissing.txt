@@ -1,0 +1,53 @@
+library(survey)
+library(caret)
+library(data.table)
+setwd("C:/Users/mark.brow/OneDrive - HHS Office of the Secretary/Desktop/JupyterNotebook")
+#df <- read.csv("NSDUH2021FullAnalyticNoMissStInd.csv", header=TRUE, sep=",")
+df <- read.csv("nsduhimputation2.csv", header=TRUE, sep=",")
+
+nsduhsvydes <- svydesign(strata=~vestr, id=~verep, weights=~analwt, data=df, nest=T)
+#mod2 <- svyglm(alcmon ~ cigyr  + cigmon + mrjmon + opinmyr + illmon + irsex + irhoind + catage + eduhighcat + irwrkstat18 + state + coutyp4, family=quasibinomial, design=nsduhsvydes)
+#mod2 <- svyglm(alcmon ~ cigyr  + cigmon + mrjmon + opinmyr + illmon + irsex + irhoind + catage + eduhighcat + coutyp4, family=quasibinomial, design=nsduhsvydes)
+mod2 <- svyglm(alcmon ~ cigyr  + cigmon + mrjmon + opinmyr + illmon + irsex + irhoind, family=quasibinomial, design=nsduhsvydes)
+
+glm_probs = data.frame(probs = predict(mod2, type="response"))
+df$index <- 1:nrow(df)
+df$probs = glm_probs[,1]
+df$r2.marright<-rbinom(nrow(df),1,df$probs)
+df$yobs = df$alcmon
+df$yobs[df$r2.marright==0] <- 3
+table(df$yobs)
+df$alcmon2 = df$alcmon
+idxList = which(df$yobs==3)
+idxList2 = which(df$yobs!=3)
+numLis2 = sample(idxList, 11176, replace=FALSE)
+numLis2 = sort(numLis2)
+idxList3 = setdiff(seq_len(nrow(df)), numLis2)
+df2 = df[numLis2,]
+df2$alcmon2=99
+df3 = df[idxList2,]
+df4 = rbind(df2,df3)
+df5 = df[idxList3,]
+df6 = rbind(df4, df5)
+new_df = unique(df6, by = "row.names")
+newdata = new_df[order(new_df$index),]
+write.table(newdata, file="newdata16perc.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+#remember to use Excel function to TEXT JOIN to fullSentence
+
+#create the hold-out set
+setwd("C:/Users/mark.brow/OneDrive - HHS Office of the Secretary/Desktop/JupyterNotebook")
+df <- read.csv("newdata16perc.csv", header=TRUE, sep=",")
+df2 = df[df$alcmon2==99,]
+df2$alcmonRepl = df2$alcmon
+#create training and test data set
+df3 = df[df$alcmon2!=99,]
+df3$alcmonRepl = df3$alcmon
+dataHoldOut = df2[,c(56:61)]
+dataTrainTest = df3[,c(56:61)]
+#dataHoldOut = df2
+#dataTrainTest = df3
+write.table(dataHoldOut, file="dataHoldOut16perc.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+write.table(dataTrainTest, file="dataTrainTest16perc.csv", col.names=TRUE, row.names=FALSE, sep=",", append=FALSE)
+
+
